@@ -165,6 +165,20 @@ export default function ScheduleTab({
                                     {emp?.name ?? "?"}
                                     {it.content ? ` · ${it.content}` : ""}
                                   </span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (confirm("이 항목을 삭제할까요?")) {
+                                        runMutation(() => deleteEntry(it.id));
+                                      }
+                                    }}
+                                    className="ml-0.5 shrink-0 rounded-sm px-1 text-white/80 hover:bg-white/25 hover:text-white"
+                                    aria-label="삭제"
+                                    title="삭제"
+                                  >
+                                    ×
+                                  </button>
                                 </li>
                               );
                             })}
