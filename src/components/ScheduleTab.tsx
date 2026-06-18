@@ -32,10 +32,14 @@ export default function ScheduleTab({
     return SCHEDULE_MONTHS.includes(m) ? m : 5;
   });
 
-  // 선택된 달의 날짜 목록 (그 달의 마지막 날까지 자동 계산)
+  // 선택된 달의 날짜 목록. 단, 지난 날짜는 빼고 "오늘 이후"만 표시 →
+  // 현재 달이면 맨 위 행이 오늘 날짜가 됩니다.
   const dates = useMemo(() => {
     const daysInMonth = new Date(year, month0 + 1, 0).getDate();
-    return Array.from({ length: daysInMonth }, (_, i) => new Date(year, month0, i + 1));
+    const all = Array.from({ length: daysInMonth }, (_, i) => new Date(year, month0, i + 1));
+    const now = new Date();
+    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return all.filter((d) => d >= todayMidnight);
   }, [year, month0]);
 
   // 클릭한 셀 (날짜 + 카테고리)
@@ -112,6 +116,16 @@ export default function ScheduleTab({
             </tr>
           </thead>
           <tbody>
+            {dates.length === 0 && (
+              <tr>
+                <td
+                  colSpan={CATEGORIES.length + 1}
+                  className="border-b border-line bg-white p-6 text-center text-sm text-forest/50"
+                >
+                  표시할 날짜가 없습니다. (이 달은 모두 지난 날짜예요)
+                </td>
+              </tr>
+            )}
             {dates.map((date) => {
               const dateStr = formatDate(date);
               const weekend = isWeekend(date);
