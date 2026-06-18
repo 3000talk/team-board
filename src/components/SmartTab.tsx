@@ -181,7 +181,7 @@ export default function SmartTab({
               {/* 마지막 주 화요일이면 '촬영'을 먼저 표시 */}
               {filming && (
                 <span
-                  className="truncate rounded-md px-1.5 py-0.5 text-[11px] font-semibold text-forest"
+                  className="whitespace-nowrap rounded-md px-1 py-0.5 text-center text-[10px] font-semibold leading-tight text-forest"
                   style={{ backgroundColor: FILMING_COLOR }}
                 >
                   {FILMING_LABEL}
@@ -191,7 +191,7 @@ export default function SmartTab({
               {/* 기존 순번 담당자도 함께 표시 (촬영 날에도 중복 표기) */}
               {a.employee && (
                 <span
-                  className="truncate rounded-md px-1.5 py-0.5 text-[11px] font-medium text-white"
+                  className="whitespace-nowrap rounded-md px-1 py-0.5 text-center text-[10px] font-medium leading-tight text-white"
                   style={{ backgroundColor: chipColor }}
                   title={a.employee.name}
                 >
