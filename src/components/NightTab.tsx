@@ -16,7 +16,7 @@ import {
 } from "@/lib/boardApi";
 import Modal from "./Modal";
 
-const WEEKDAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
+const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
 // 탭2: 야간 순환근무 (월 단위 달력)
 export default function NightTab({
@@ -110,7 +110,7 @@ export default function NightTab({
           <div
             key={w}
             className={`py-1 text-center text-xs font-medium ${
-              i >= 5 ? "text-house" : "text-forest/60"
+              i === 0 || i === 6 ? "text-house" : "text-forest/60"
             }`}
           >
             {w}

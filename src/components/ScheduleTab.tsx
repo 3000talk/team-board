@@ -10,7 +10,10 @@ import Modal from "./Modal";
 
 const KO_WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
-// 탭1: 일정표 (행=날짜 6/1~6/30, 열=교육/행사/연가)
+// 일정표에서 다룰 달 범위 (6월~12월). month0: 0=1월이므로 5~11.
+const SCHEDULE_MONTHS = [5, 6, 7, 8, 9, 10, 11];
+
+// 탭1: 일정표 (행=날짜, 열=교육/행사/연가) — 6월~12월 중 한 달씩 보기
 export default function ScheduleTab({
   data,
   runMutation,
@@ -20,11 +23,20 @@ export default function ScheduleTab({
 }) {
   const employees = useMemo(() => orderedEmployees(data.employees), [data.employees]);
 
-  // 표에 표시할 날짜: 올해 6월 1일 ~ 30일
+  // 표시할 연도 (올해)
+  const year = useMemo(() => new Date().getFullYear(), []);
+
+  // 선택된 달 (기본: 오늘이 6~12월이면 그 달, 아니면 6월)
+  const [month0, setMonth0] = useState<number>(() => {
+    const m = new Date().getMonth();
+    return SCHEDULE_MONTHS.includes(m) ? m : 5;
+  });
+
+  // 선택된 달의 날짜 목록 (그 달의 마지막 날까지 자동 계산)
   const dates = useMemo(() => {
-    const year = new Date().getFullYear();
-    return Array.from({ length: 30 }, (_, i) => new Date(year, 5, i + 1)); // 5 = 6월
-  }, []);
+    const daysInMonth = new Date(year, month0 + 1, 0).getDate();
+    return Array.from({ length: daysInMonth }, (_, i) => new Date(year, month0, i + 1));
+  }, [year, month0]);
 
   // 클릭한 셀 (날짜 + 카테고리)
   const [cellEdit, setCellEdit] = useState<{ date: Date; category: Category } | null>(null);
@@ -48,6 +60,24 @@ export default function ScheduleTab({
         <span className="text-xs font-medium text-forest/60">팀원 (이름을 클릭해 수정)</span>
         {employees.map((emp) => (
           <EmployeeChip key={emp.id} employee={emp} runMutation={runMutation} />
+        ))}
+      </div>
+
+      {/* 월 선택 (6월~12월) */}
+      <div className="mb-3 flex flex-wrap items-center gap-1.5">
+        <span className="mr-1 text-xs font-medium text-forest/60">{year}년</span>
+        {SCHEDULE_MONTHS.map((m) => (
+          <button
+            key={m}
+            onClick={() => setMonth0(m)}
+            className={`rounded-cell px-3 py-1.5 text-sm font-medium transition-colors ${
+              m === month0
+                ? "bg-house text-white"
+                : "border border-line bg-white text-forest/70 hover:bg-mint/30"
+            }`}
+          >
+            {m + 1}월
+          </button>
         ))}
       </div>
 

@@ -9,8 +9,9 @@ import ShareBar from "./ShareBar";
 import StatusPill from "./StatusPill";
 import ScheduleTab from "./ScheduleTab";
 import NightTab from "./NightTab";
+import SmartTab from "./SmartTab";
 
-type Tab = "schedule" | "night";
+type Tab = "schedule" | "night" | "smart";
 type SyncState = "connecting" | "live" | "offline";
 
 export default function BoardClient({ boardId }: { boardId: string }) {
@@ -101,6 +102,11 @@ export default function BoardClient({ boardId }: { boardId: string }) {
         { event: "*", schema: "public", table: "night_overrides", filter: `schedule_id=eq.${boardId}` },
         scheduleRunReload
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "smart_overrides", filter: `schedule_id=eq.${boardId}` },
+        scheduleRunReload
+      )
       .subscribe((status) => {
         if (status === "SUBSCRIBED") setSync("live");
         else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") setSync("offline");
@@ -178,20 +184,21 @@ export default function BoardClient({ boardId }: { boardId: string }) {
         )}
 
         {/* 탭 버튼 */}
-        <div className="mb-5 inline-flex rounded-cell border border-line bg-white p-1">
+        <div className="mb-5 inline-flex flex-wrap rounded-cell border border-line bg-white p-1">
           <TabButton active={tab === "schedule"} onClick={() => setTab("schedule")}>
             일정표
+          </TabButton>
+          <TabButton active={tab === "smart"} onClick={() => setTab("smart")}>
+            스마트도서관
           </TabButton>
           <TabButton active={tab === "night"} onClick={() => setTab("night")}>
             야간 순환근무
           </TabButton>
         </div>
 
-        {tab === "schedule" ? (
-          <ScheduleTab data={data} runMutation={runMutation} />
-        ) : (
-          <NightTab data={data} runMutation={runMutation} />
-        )}
+        {tab === "schedule" && <ScheduleTab data={data} runMutation={runMutation} />}
+        {tab === "smart" && <SmartTab data={data} runMutation={runMutation} />}
+        {tab === "night" && <NightTab data={data} runMutation={runMutation} />}
       </main>
     </div>
   );

@@ -19,8 +19,12 @@ create table if not exists public.schedules (
   id               text primary key,           -- 예: '개포도서관'
   title            text not null default '',
   night_start_date date,                        -- 야간 순환근무 시작일
+  smart_start_date date,                        -- 스마트도서관(화·금) 순환 시작일
   created_at       timestamptz not null default now()
 );
+
+-- 이미 schedules 테이블이 있던 경우를 대비해 컬럼 보강
+alter table public.schedules add column if not exists smart_start_date date;
 
 -- (2) employees : 팀원 6명
 create table if not exists public.employees (
@@ -38,7 +42,7 @@ create table if not exists public.entries (
   schedule_id text not null references public.schedules(id) on delete cascade,
   date        date,                              -- 일정표의 날짜 (예: 2026-06-01)
   employee_id uuid not null references public.employees(id) on delete cascade,
-  category    text not null check (category in ('교육', '행사', '연가')),
+  category    text not null check (category in ('연가', '교육', '비고')),
   content     text not null default '',
   created_at  timestamptz not null default now()
 );
@@ -57,8 +61,19 @@ create table if not exists public.night_overrides (
   unique (schedule_id, date)                    -- 한 날짜당 한 건만
 );
 
+-- (5) smart_overrides : 스마트도서관(탭3) 수동 교체분만 저장.
+create table if not exists public.smart_overrides (
+  id          uuid primary key default gen_random_uuid(),
+  schedule_id text not null references public.schedules(id) on delete cascade,
+  date        date not null,
+  employee_id uuid not null references public.employees(id) on delete cascade,
+  created_at  timestamptz not null default now(),
+  unique (schedule_id, date)
+);
+
 -- 자주 조회하는 컬럼에 인덱스
 create index if not exists idx_employees_schedule on public.employees(schedule_id);
+create index if not exists idx_smart_overrides_schedule on public.smart_overrides(schedule_id);
 create index if not exists idx_entries_schedule   on public.entries(schedule_id);
 create index if not exists idx_entries_date        on public.entries(schedule_id, date);
 create index if not exists idx_overrides_schedule on public.night_overrides(schedule_id);
@@ -74,12 +89,14 @@ alter table public.schedules       enable row level security;
 alter table public.employees       enable row level security;
 alter table public.entries         enable row level security;
 alter table public.night_overrides enable row level security;
+alter table public.smart_overrides enable row level security;
 
 -- 기존 정책이 있으면 지우고 다시 만들기 (재실행 안전)
 drop policy if exists "public_all_schedules"       on public.schedules;
 drop policy if exists "public_all_employees"       on public.employees;
 drop policy if exists "public_all_entries"         on public.entries;
 drop policy if exists "public_all_night_overrides" on public.night_overrides;
+drop policy if exists "public_all_smart_overrides" on public.smart_overrides;
 
 create policy "public_all_schedules"       on public.schedules
   for all using (true) with check (true);
@@ -88,6 +105,8 @@ create policy "public_all_employees"       on public.employees
 create policy "public_all_entries"         on public.entries
   for all using (true) with check (true);
 create policy "public_all_night_overrides" on public.night_overrides
+  for all using (true) with check (true);
+create policy "public_all_smart_overrides" on public.smart_overrides
   for all using (true) with check (true);
 
 
@@ -102,6 +121,7 @@ alter table public.schedules       replica identity full;
 alter table public.employees       replica identity full;
 alter table public.entries         replica identity full;
 alter table public.night_overrides replica identity full;
+alter table public.smart_overrides replica identity full;
 
 -- publication에 테이블 추가 (이미 추가돼 있으면 무시)
 do $$
@@ -120,6 +140,10 @@ begin
   end;
   begin
     alter publication supabase_realtime add table public.night_overrides;
+  exception when duplicate_object then null;
+  end;
+  begin
+    alter publication supabase_realtime add table public.smart_overrides;
   exception when duplicate_object then null;
   end;
 end $$;

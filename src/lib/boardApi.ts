@@ -47,21 +47,28 @@ export async function fetchBoard(boardId: string): Promise<BoardData | null> {
   if (sErr) throw sErr;
   if (!schedule) return null;
 
-  const [{ data: employees, error: eErr }, { data: entries, error: enErr }, { data: overrides, error: oErr }] =
-    await Promise.all([
-      supabase.from("employees").select("*").eq("schedule_id", boardId).order("sort_order"),
-      supabase.from("entries").select("*").eq("schedule_id", boardId).order("created_at"),
-      supabase.from("night_overrides").select("*").eq("schedule_id", boardId),
-    ]);
+  const [
+    { data: employees, error: eErr },
+    { data: entries, error: enErr },
+    { data: overrides, error: oErr },
+    { data: smartOverrides, error: soErr },
+  ] = await Promise.all([
+    supabase.from("employees").select("*").eq("schedule_id", boardId).order("sort_order"),
+    supabase.from("entries").select("*").eq("schedule_id", boardId).order("created_at"),
+    supabase.from("night_overrides").select("*").eq("schedule_id", boardId),
+    supabase.from("smart_overrides").select("*").eq("schedule_id", boardId),
+  ]);
   if (eErr) throw eErr;
   if (enErr) throw enErr;
   if (oErr) throw oErr;
+  if (soErr) throw soErr;
 
   return {
     schedule: schedule as Schedule,
     employees: employees ?? [],
     entries: entries ?? [],
     overrides: overrides ?? [],
+    smartOverrides: smartOverrides ?? [],
   };
 }
 
@@ -121,6 +128,36 @@ export async function setNightOverride(boardId: string, dateStr: string, employe
 export async function clearNightOverride(boardId: string, dateStr: string) {
   const { error } = await supabase
     .from("night_overrides")
+    .delete()
+    .eq("schedule_id", boardId)
+    .eq("date", dateStr);
+  if (error) throw error;
+}
+
+// ── 스마트도서관 순환 시작일 변경 ──
+export async function updateSmartStartDate(boardId: string, dateStr: string | null) {
+  const { error } = await supabase
+    .from("schedules")
+    .update({ smart_start_date: dateStr })
+    .eq("id", boardId);
+  if (error) throw error;
+}
+
+// ── 스마트도서관 수동 교체 저장 ──
+export async function setSmartOverride(boardId: string, dateStr: string, employeeId: string) {
+  const { error } = await supabase
+    .from("smart_overrides")
+    .upsert(
+      { schedule_id: boardId, date: dateStr, employee_id: employeeId },
+      { onConflict: "schedule_id,date" }
+    );
+  if (error) throw error;
+}
+
+// ── 스마트도서관 수동 교체 해제 ──
+export async function clearSmartOverride(boardId: string, dateStr: string) {
+  const { error } = await supabase
+    .from("smart_overrides")
     .delete()
     .eq("schedule_id", boardId)
     .eq("date", dateStr);

@@ -52,12 +52,31 @@ export function countWeekendsExclusive(start: Date, end: Date): number {
   return total - countWeekdaysExclusive(start, end);
 }
 
-// 어떤 달(year, month0: 0=1월)의 달력 그리드(월요일 시작 7열)에 들어갈
+// [start, end) 구간에서 "지정한 요일들"(예: 화=2, 금=5)에 해당하는 날 개수
+export function countSpecificWeekdaysExclusive(
+  start: Date,
+  end: Date,
+  weekdays: number[]
+): number {
+  const total = dayDiff(start, end);
+  if (total <= 0) return 0;
+  const fullWeeks = Math.floor(total / 7);
+  let count = fullWeeks * weekdays.length;
+  const remainder = total % 7;
+  let dow = start.getDay();
+  for (let i = 0; i < remainder; i++) {
+    if (weekdays.includes(dow)) count++;
+    dow = (dow + 1) % 7;
+  }
+  return count;
+}
+
+// 어떤 달(year, month0: 0=1월)의 달력 그리드(일요일 시작 7열)에 들어갈
 // 42칸(또는 35칸) 날짜 배열을 만든다. 앞뒤로 이웃 달 날짜가 채워짐.
 export function buildMonthGrid(year: number, month0: number): Date[] {
   const first = new Date(year, month0, 1);
-  // 월요일 시작으로 맞추기: getDay() 0=일..6=토 -> 월=0이 되도록 변환
-  const firstDow = (first.getDay() + 6) % 7; // 월:0, 화:1, ... 일:6
+  // 일요일 시작으로 맞추기: getDay() 0=일..6=토
+  const firstDow = first.getDay(); // 일:0, 월:1, ... 토:6
   const gridStart = new Date(year, month0, 1 - firstDow);
 
   const cells: Date[] = [];
