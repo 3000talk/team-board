@@ -148,7 +148,7 @@ export default function NightTab({
               </div>
               {a.employee && (
                 <span
-                  className="truncate rounded-md px-1.5 py-0.5 text-[11px] font-medium text-white"
+                  className="whitespace-nowrap rounded-md px-1 py-0.5 text-center text-[10px] font-medium leading-tight text-white"
                   style={{ backgroundColor: a.employee.color }}
                   title={a.employee.name}
                 >
