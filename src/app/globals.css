@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS 변수로도 팔레트를 등록해 두면, 인라인 style 등에서 쓰기 편합니다. */
+:root {
+  --house: #00704a;
+  --forest: #1e3932;
+  --mint: #d4e9e2;
+  --cream: #f7f5ef;
+  --line: #e2decf;
+}
+
+html,
+body {
+  background-color: var(--cream);
+  color: var(--forest);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 공통 버튼 스타일 (조용하고 평평한 카페 무드) */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-1 rounded-cell bg-house px-4 py-2
+           text-sm font-medium text-white transition-opacity hover:opacity-90
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-1 rounded-cell border border-house
+           bg-white px-4 py-2 text-sm font-medium text-house transition-colors
+           hover:bg-mint/40 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .card {
+    @apply rounded-card border border-line bg-white;
+  }
+}
+
+/* 모바일에서 가로 스크롤 표가 자연스럽게 */
+.no-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+.no-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+}
