@@ -154,15 +154,15 @@ export default function SmartTab({
           return (
             <button
               key={formatDate(date)}
-              onClick={() => active && !filming && setPicked(date)}
-              disabled={!active || filming}
+              onClick={() => active && setPicked(date)}
+              disabled={!active}
               className={`flex min-h-[64px] flex-col items-stretch gap-1 rounded-cell border p-1.5 text-left transition-colors sm:min-h-[84px] ${
-                filming
-                  ? "cursor-default border-line"
-                  : active
-                  ? "border-line bg-mint/40 hover:border-house"
+                active
+                  ? "border-line hover:border-house"
                   : "cursor-default border-line bg-white"
-              } ${inMonth ? "" : "opacity-40"} ${isToday ? "ring-2 ring-house ring-offset-1" : ""}`}
+              } ${active && !filming ? "bg-mint/40" : ""} ${inMonth ? "" : "opacity-40"} ${
+                isToday ? "ring-2 ring-house ring-offset-1" : ""
+              }`}
               style={filming ? { backgroundColor: `${FILMING_COLOR}33` } : undefined}
             >
               <div className="flex items-center justify-between">
@@ -171,29 +171,32 @@ export default function SmartTab({
                 >
                   {date.getDate()}
                 </span>
-                {a.isOverride && !filming && (
+                {a.isOverride && (
                   <span className="text-[10px]" style={{ color: SMART_OVERRIDE_COLOR }} title="수동 변경">
                     ✎
                   </span>
                 )}
               </div>
-              {filming ? (
+
+              {/* 마지막 주 화요일이면 '촬영'을 먼저 표시 */}
+              {filming && (
                 <span
                   className="truncate rounded-md px-1.5 py-0.5 text-[11px] font-semibold text-forest"
                   style={{ backgroundColor: FILMING_COLOR }}
                 >
                   {FILMING_LABEL}
                 </span>
-              ) : (
-                a.employee && (
-                  <span
-                    className="truncate rounded-md px-1.5 py-0.5 text-[11px] font-medium text-white"
-                    style={{ backgroundColor: chipColor }}
-                    title={a.employee.name}
-                  >
-                    {a.employee.name}
-                  </span>
-                )
+              )}
+
+              {/* 기존 순번 담당자도 함께 표시 (촬영 날에도 중복 표기) */}
+              {a.employee && (
+                <span
+                  className="truncate rounded-md px-1.5 py-0.5 text-[11px] font-medium text-white"
+                  style={{ backgroundColor: chipColor }}
+                  title={a.employee.name}
+                >
+                  {a.employee.name}
+                </span>
               )}
             </button>
           );

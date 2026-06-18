@@ -91,7 +91,7 @@ export function countSmartFairness(
   const counts: Record<string, number> = {};
   for (const emp of smartRotationEmployees(employees)) counts[emp.id] = 0;
   for (const d of dates) {
-    if (isFilmingDate(d)) continue; // 촬영 날은 담당 횟수에서 제외
+    // 촬영 날에도 기존 순번 담당자는 그대로 근무하므로 횟수에 포함
     const a = smartAssignmentForDate(d, startDateStr, employees, overrideMap);
     if (a.employee) counts[a.employee.id] = (counts[a.employee.id] ?? 0) + 1;
   }

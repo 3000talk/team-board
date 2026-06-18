@@ -1,7 +1,9 @@
 import type { Category } from "./types";
 
-// 이번 팀표의 기본 공유 ID (slug)
-export const DEFAULT_BOARD_ID = "개포도서관";
+// 이번 팀표의 기본 공유 ID (slug). URL은 /board/gaepo 형태가 됩니다.
+export const DEFAULT_BOARD_ID = "gaepo";
+// 화면에 보이는 제목 (URL과 달리 한글 그대로)
+export const DEFAULT_BOARD_TITLE = "개포도서관";
 
 // 초기 팀원 6명. 색상은 스타벅스 그린 무드에 어울리는 차분한 톤.
 // sort_order 순서가 곧 야간 순환근무 순서입니다.
